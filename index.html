@@ -1,145 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TheGC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #e5ddd5;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      background: #075e54;
-      color: white;
-      padding: 12px;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    #chat {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .msg {
-      max-width: 70%;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      word-wrap: break-word;
-    }
-
-    .sent {
-      align-self: flex-end;
-      background: #0f9911;
-      color: white;
-    }
-
-    .received {
-      align-self: flex-start;
-      background: #0a83f5;
-      color: white;
-    }
-
-    footer {
-      display: flex;
-      padding: 10px;
-      background: #f0f0f0;
-    }
-
-    input {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- SCREEN 1: INVITE -->
+  <section id="screenInvite" class="screen">
+    <div class="centerCard">
+      <h1 class="bigTitle">TheGC</h1>
+      <p class="muted">Invite link required</p>
+      <p id="inviteErr" class="err"></p>
+      <p class="muted small">Use the exact invite link you were given.</p>
+    </div>
+  </section>
 
-<header>TheGC</header>
+  <!-- SCREEN 2: SIGN IN -->
+  <section id="screenAuth" class="screen hidden">
+    <div class="centerCard">
+      <h1 class="bigTitle">TheGC</h1>
+      <p class="muted">Sign in to continue</p>
 
-<div id="chat"></div>
+      <button id="googleBtn" class="btnPrimary">Continue with Google</button>
 
-<footer>
-  <input id="messageInput" placeholder="Type a message…" />
-  <button onclick="sendMessage()">Send</button>
-</footer>
+      <div class="divider"><span>or</span></div>
 
-<script>
-  // ===== CONFIG =====
-  const currentUserEmail = "you@example.com"; // LOCKED username
-  const baseTitle = "TheGC";
+      <input id="email" type="email" placeholder="Email" autocomplete="email" />
+      <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
 
-  // ===== UNREAD COUNT LOGIC =====
-  let unreadCount = 0;
+      <div class="row">
+        <button id="signInBtn" class="btnSecondary">Sign in</button>
+        <button id="signUpBtn" class="btnSecondary">Create account</button>
+      </div>
 
-  function updateTitle() {
-    if (unreadCount > 0) {
-      document.title = `(${unreadCount}) ${baseTitle}`;
-    } else {
-      document.title = baseTitle;
-    }
-  }
+      <p id="authErr" class="err"></p>
+      <p class="muted small">Friends-only. Email/password works everywhere.</p>
+    </div>
+  </section>
 
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) {
-      unreadCount = 0;
-      updateTitle();
-    }
-  });
+  <!-- SCREEN 3: CHAT -->
+  <section id="screenChat" class="screen hidden">
+    <header class="topBar">
+      <div class="title">TheGC</div>
+      <div class="topRight">
+        <div id="who" class="who"></div>
+        <button id="signOutBtn" class="btnSecondary smallBtn">Sign out</button>
+      </div>
+    </header>
 
-  // ===== CHAT LOGIC =====
-  const chat = document.getElementById("chat");
-  const input = document.getElementById("messageInput");
+    <main class="chat">
+      <div id="messages" class="messages"></div>
 
-  function addMessage(text, sender) {
-    const div = document.createElement("div");
-    div.classList.add("msg");
+      <button id="jumpBtn" class="jump hidden" type="button">New messages ↓</button>
 
-    const isMine = sender === currentUserEmail;
-    div.classList.add(isMine ? "sent" : "received");
-    div.textContent = text;
+      <form id="sendForm" class="send">
+        <input id="msgInput" placeholder="Type a message…" autocomplete="off" />
+        <button id="sendBtn" class="btnPrimary" type="submit">Send</button>
+      </form>
+    </main>
+  </section>
 
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-
-    // Count unread ONLY if tab hidden & message not mine
-    if (document.hidden && !isMine) {
-      unreadCount++;
-      updateTitle();
-    }
-  }
-
-  function sendMessage() {
-    if (!input.value.trim()) return;
-    addMessage(input.value, currentUserEmail);
-    input.value = "";
-  }
-
-  // ===== DEMO: simulate incoming messages =====
-  setInterval(() => {
-    addMessage("New message 👋", "other@user.com");
-  }, 8000);
-
-  updateTitle();
-</script>
-
+  <script type="module" src="app.js"></script>
 </body>
 </html>
