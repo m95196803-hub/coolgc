@@ -22,10 +22,13 @@ import {
 
 /* 🔴 PASTE YOUR REAL CONFIG HERE */
 const firebaseConfig = {
-  // apiKey: "...",
-  // authDomain: "...",
-  // projectId: "...",
-  // appId: "..."
+  apiKey: "AIzaSyCPOrxuMh2TqmY7JI4Pky-4VtWwEg5qN7A",
+  authDomain: "coolgc-e5af0.firebaseapp.com",
+  projectId: "coolgc-e5af0",
+  storageBucket: "coolgc-e5af0.firebasestorage.app",
+  messagingSenderId: "99545732120",
+  appId: "1:99545732120:web:2486fbe2f4439d8498df6d",
+  measurementId: "G-VJC07ML3K9"
 };
 
 const REQUIRED_INVITE = "friends2026";
