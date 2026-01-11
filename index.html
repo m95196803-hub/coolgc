@@ -9,36 +9,40 @@
 <body>
   <div class="wrap">
     <header class="top">
-      <h1>TheGC</h1>
-      <p class="sub">Invite link + Google or Email/Password</p>
+      <div class="topBar">
+        <div class="brand">
+          <div class="brandTitle">TheGC</div>
+          <div class="brandSub">Invite link + Google or Email/Password</div>
+        </div>
+      </div>
     </header>
 
     <!-- INVITE GATE -->
     <section id="inviteCard" class="card">
-      <h2 style="margin:0 0 8px 0; color:#fff;">Invite required</h2>
+      <h2 class="cardTitle">Invite required</h2>
       <p class="hint">Open this chat using the invite link you were given.</p>
       <p id="inviteErr" class="err" aria-live="polite"></p>
     </section>
 
     <!-- AUTH -->
     <section id="authCard" class="card hidden">
-      <h2 style="margin:0 0 10px 0; color:#fff;">Sign in</h2>
+      <h2 class="cardTitle">Sign in</h2>
 
-      <button id="googleBtn">Continue with Google</button>
+      <button id="googleBtn" class="btnPrimary">Continue with Google</button>
 
       <div class="divider"><span>or</span></div>
 
-      <label style="color:#aebac1;">Email
+      <label class="lbl">Email
         <input id="email" type="email" placeholder="you@example.com" autocomplete="email" />
       </label>
 
-      <label style="color:#aebac1;">Password
+      <label class="lbl">Password
         <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
       </label>
 
       <div class="row">
-        <button id="signInBtn" class="ghost">Sign in</button>
-        <button id="signUpBtn" class="ghost">Create account</button>
+        <button id="signInBtn" class="btnSecondary">Sign in</button>
+        <button id="signUpBtn" class="btnSecondary">Create account</button>
       </div>
 
       <p id="authErr" class="err" aria-live="polite"></p>
@@ -49,13 +53,13 @@
     <section id="chatCard" class="card hidden">
       <div class="chatHead">
         <div>
-          <div style="font-weight:700; font-size:18px;">TheGC</div>
+          <div class="chatTitle">TheGC</div>
           <div class="meta">Signed in as <span id="who"></span></div>
         </div>
-        <button id="signOutBtn" class="ghost">Sign out</button>
+        <button id="signOutBtn" class="btnSecondary">Sign out</button>
       </div>
 
-      <label style="color:#aebac1;">
+      <label class="lbl">
         Chat username
         <input id="displayName" maxlength="20" placeholder="Pick a name for the chat" />
       </label>
@@ -64,7 +68,7 @@
 
       <form id="sendForm" class="send">
         <input id="msgInput" maxlength="400" placeholder="Type a message..." autocomplete="off" />
-        <button id="sendBtn" type="submit">Send</button>
+        <button id="sendBtn" class="btnPrimary" type="submit">Send</button>
       </form>
 
       <p class="hint small">Sent messages are green (right). Received are grey (left).</p>
