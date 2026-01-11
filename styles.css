@@ -138,7 +138,11 @@ button{
   line-height:1.35;
 }
 .bubble.me{background:var(--sent); border-top-right-radius:4px}
-.bubble.recv{background:var(--recv); border-top-left-radius:4px}
+.bubble.recv{
+  background: var(--recv);
+  border-top-left-radius:4px;
+  color: white;                 /* ← THIS is critical */
+}
 
 .name{
   font-size:12px;
