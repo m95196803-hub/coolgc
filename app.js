@@ -20,19 +20,19 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/** 1) PASTE YOUR firebaseConfig BETWEEN THE BRACES */
+/** ✅ STEP 1: Paste your REAL firebaseConfig below */
 const firebaseConfig = {
-  apiKey: "AIzaSyCPOrxuMh2TqmY7JI4Pky-4VtWwEg5qN7A",
-  authDomain: "coolgc-e5af0.firebaseapp.com",
-  projectId: "coolgc-e5af0",
-  storageBucket: "coolgc-e5af0.firebasestorage.app",
-  messagingSenderId: "99545732120",
-  appId: "1:99545732120:web:2486fbe2f4439d8498df6d",
-  measurementId: "G-VJC07ML3K9"
+  // apiKey: "...",
+  // authDomain: "...",
+  // projectId: "...",
+  // storageBucket: "...",
+  // messagingSenderId: "...",
+  // appId: "...",
+  // measurementId: "..."
 };
 
-/** 2) SET YOUR INVITE SECRET (used in the URL hash) */
-const REQUIRED_INVITE = "friends2026"; // <-- change this to your secret
+/** ✅ STEP 2: Invite secret (your value) */
+const REQUIRED_INVITE = "friends2026";
 
 const $ = (id) => document.getElementById(id);
 
@@ -72,7 +72,6 @@ function safeName(v){
 }
 
 function getInviteFromHash(){
-  // expects URL like: https://site/#invite=party123
   const h = (location.hash || "").replace(/^#/, "");
   const params = new URLSearchParams(h);
   return (params.get("invite") || "").trim();
@@ -94,27 +93,23 @@ function clearMessages(){ messagesEl.innerHTML = ""; }
 
 function addMessage({name,text,ts,uid}, myUid){
   const wrap = document.createElement("div");
-  wrap.className = `msg ${uid === myUid ? "me" : ""}`;
-
-  const top = document.createElement("div");
-  top.className = "row2";
+  wrap.className = `msg ${uid === myUid ? "me" : "recv"}`;
 
   const n = document.createElement("div");
   n.className = "name";
   n.textContent = name;
 
-  const t = document.createElement("div");
-  t.className = "time";
-  t.textContent = ts ? fmtTime(ts) : "";
-
   const body = document.createElement("div");
   body.className = "text";
   body.textContent = text;
 
-  top.appendChild(n);
-  top.appendChild(t);
-  wrap.appendChild(top);
+  const t = document.createElement("div");
+  t.className = "time";
+  t.textContent = ts ? fmtTime(ts) : "";
+
+  wrap.appendChild(n);
   wrap.appendChild(body);
+  wrap.appendChild(t);
   messagesEl.appendChild(wrap);
 
   const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 180;
@@ -125,7 +120,7 @@ function validateConfig(){
   return !!(firebaseConfig?.apiKey && firebaseConfig?.projectId && firebaseConfig?.appId);
 }
 
-// Invite gate check (UI-only)
+// Invite gate (practical / UI-only)
 if (!inviteOk()){
   showOnly(inviteCard);
   showInviteError("Missing/invalid invite link. Use the link you were given.");
@@ -134,24 +129,25 @@ if (!inviteOk()){
 }
 
 if (!validateConfig()){
-  showAuthError("Paste your firebaseConfig into app.js (top of file).");
+  showAuthError("Paste your firebaseConfig into app.js (top of file) then commit.");
 }
 
+// Init Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
 let unsubMessages = null;
 
-// Prefill chat name if previously set
+// Prefill chat name
 displayName.value = safeName(localStorage.getItem("chat_display_name") || "");
 
-// Save chat name as you type
+// Save chat name
 displayName.addEventListener("input", () => {
   localStorage.setItem("chat_display_name", safeName(displayName.value));
 });
 
-// AUTH UI
+// Auth UI
 googleBtn.addEventListener("click", async () => {
   showAuthError("");
   try {
@@ -159,7 +155,7 @@ googleBtn.addEventListener("click", async () => {
     await signInWithPopup(auth, provider);
   } catch (e) {
     console.error(e);
-    showAuthError("Google sign-in failed. Check Authorized domains + popup blocking.");
+    showAuthError("Google sign-in failed. If email login works, add your GitHub Pages domain to Firebase Authorized domains.");
   }
 });
 
@@ -187,10 +183,9 @@ signOutBtn.addEventListener("click", async () => {
   await signOut(auth);
 });
 
-// Realtime listener (ONE ROOM = one "messages" collection)
+// Realtime listener
 onAuthStateChanged(auth, (user) => {
   if (!inviteOk()){
-    // If they remove the invite hash, kick them back to invite screen
     showOnly(inviteCard);
     if (unsubMessages) unsubMessages();
     unsubMessages = null;
@@ -210,8 +205,7 @@ onAuthStateChanged(auth, (user) => {
   showOnly(chatCard);
   who.textContent = user.email || user.displayName || user.uid;
 
-  // Ensure a default chat name
-  if (!safeName(displayName.value)) {
+  if (!safeName(displayName.value)){
     const defaultName = safeName(user.displayName || user.email?.split("@")[0] || "Friend");
     displayName.value = defaultName;
     localStorage.setItem("chat_display_name", defaultName);
@@ -234,12 +228,12 @@ onAuthStateChanged(auth, (user) => {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }, (err) => {
     console.error(err);
-    showAuthError("Firestore read failed. Check Firestore rules + Auth sign-in.");
+    showAuthError("Firestore read failed. Check rules + sign-in.");
     showOnly(authCard);
   });
 });
 
-// SEND
+// Send
 sendForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
