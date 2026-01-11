@@ -20,7 +20,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/** ✅ STEP 1: Paste your REAL firebaseConfig below */
+/** ✅ PASTE YOUR REAL firebaseConfig HERE */
 const firebaseConfig = {
   apiKey: "AIzaSyCPOrxuMh2TqmY7JI4Pky-4VtWwEg5qN7A",
   authDomain: "coolgc-e5af0.firebaseapp.com",
@@ -31,7 +31,7 @@ const firebaseConfig = {
   measurementId: "G-VJC07ML3K9"
 };
 
-/** ✅ STEP 2: Invite secret (your value) */
+/** ✅ Invite secret */
 const REQUIRED_INVITE = "friends2026";
 
 const $ = (id) => document.getElementById(id);
@@ -92,8 +92,13 @@ function fmtTime(date){
 function clearMessages(){ messagesEl.innerHTML = ""; }
 
 function addMessage({name,text,ts,uid}, myUid){
-  const wrap = document.createElement("div");
-  wrap.className = `msg ${uid === myUid ? "me" : "recv"}`;
+  // This wrapper row is what physically aligns bubbles left/right
+  const row = document.createElement("div");
+  const mine = uid === myUid;
+  row.className = `msgRow ${mine ? "me" : "recv"}`;
+
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${mine ? "me" : "recv"}`;
 
   const n = document.createElement("div");
   n.className = "name";
@@ -107,10 +112,12 @@ function addMessage({name,text,ts,uid}, myUid){
   t.className = "time";
   t.textContent = ts ? fmtTime(ts) : "";
 
-  wrap.appendChild(n);
-  wrap.appendChild(body);
-  wrap.appendChild(t);
-  messagesEl.appendChild(wrap);
+  bubble.appendChild(n);
+  bubble.appendChild(body);
+  bubble.appendChild(t);
+
+  row.appendChild(bubble);
+  messagesEl.appendChild(row);
 
   const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 180;
   if (nearBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -155,7 +162,7 @@ googleBtn.addEventListener("click", async () => {
     await signInWithPopup(auth, provider);
   } catch (e) {
     console.error(e);
-    showAuthError("Google sign-in failed. If email login works, add your GitHub Pages domain to Firebase Authorized domains.");
+    showAuthError("Google sign-in failed. If email works, add your GitHub Pages domain to Firebase Authorized domains.");
   }
 });
 
