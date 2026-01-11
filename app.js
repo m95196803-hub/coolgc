@@ -20,7 +20,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/** ✅ PASTE YOUR REAL firebaseConfig HERE */
+/* 🔴 PASTE YOUR REAL CONFIG HERE */
 const firebaseConfig = {
   apiKey: "AIzaSyCPOrxuMh2TqmY7JI4Pky-4VtWwEg5qN7A",
   authDomain: "coolgc-e5af0.firebaseapp.com",
@@ -33,7 +33,7 @@ const firebaseConfig = {
 
 const REQUIRED_INVITE = "friends2026";
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
 const screenInvite = $("screenInvite");
 const screenAuth   = $("screenAuth");
@@ -47,26 +47,24 @@ const email     = $("email");
 const password  = $("password");
 const signInBtn = $("signInBtn");
 const signUpBtn = $("signUpBtn");
-
 const signOutBtn = $("signOutBtn");
-const whoEl      = $("who");
 
+const whoEl = $("who");
 const messagesEl = $("messages");
-const sendForm   = $("sendForm");
-const msgInput   = $("msgInput");
-const jumpBtn    = $("jumpBtn");
+const sendForm = $("sendForm");
+const msgInput = $("msgInput");
+const jumpBtn = $("jumpBtn");
 
-function showOnly(which){
+function showOnly(el){
   screenInvite.classList.add("hidden");
   screenAuth.classList.add("hidden");
   screenChat.classList.add("hidden");
-  which.classList.remove("hidden");
+  el.classList.remove("hidden");
 }
 
 function getInvite(){
   const h = (location.hash || "").replace(/^#/, "");
-  const params = new URLSearchParams(h);
-  return (params.get("invite") || "").trim();
+  return new URLSearchParams(h).get("invite");
 }
 
 function inviteOk(){
@@ -75,20 +73,17 @@ function inviteOk(){
 
 function fmtTime(ts){
   const d = ts?.toDate?.();
-  if (!d) return "";
-  return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  return d
+    ? d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })
+    : "";
 }
 
 function isNearBottom(el){
   return (el.scrollHeight - el.scrollTop - el.clientHeight) < 160;
 }
 
-function scrollToBottom(el){
-  el.scrollTop = el.scrollHeight;
-}
-
-function setJumpVisible(on){
-  jumpBtn.classList.toggle("hidden", !on);
+function scrollToBottom(){
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
 function clearMessages(){
@@ -120,46 +115,56 @@ function addMessage({ text, ts, uid, name }, myUid){
   messagesEl.append(row);
 }
 
-/* Invite gate */
+/* 🚨 INVITE GATE — FIXED */
 if (!inviteOk()){
   showOnly(screenInvite);
-  inviteErr.textContent = "Missing/invalid invite link.";
+  inviteErr.textContent = "Missing or invalid invite link.";
 } else {
+  // VALID invite → go straight to AUTH
   showOnly(screenAuth);
 }
 
+/* Firebase init */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* Auth */
+/* AUTH */
 googleBtn.onclick = async () => {
   authErr.textContent = "";
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch (e) { authErr.textContent = e?.message || "Google sign-in failed."; }
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (e) {
+    authErr.textContent = e?.message || "Google sign-in failed.";
+  }
 };
 
 signUpBtn.onclick = async () => {
   authErr.textContent = "";
-  try { await createUserWithEmailAndPassword(auth, email.value.trim(), password.value); }
-  catch (e) { authErr.textContent = e?.message || "Sign-up failed."; }
+  try {
+    await createUserWithEmailAndPassword(auth, email.value.trim(), password.value);
+  } catch (e) {
+    authErr.textContent = e?.message || "Sign-up failed.";
+  }
 };
 
 signInBtn.onclick = async () => {
   authErr.textContent = "";
-  try { await signInWithEmailAndPassword(auth, email.value.trim(), password.value); }
-  catch (e) { authErr.textContent = e?.message || "Sign-in failed."; }
+  try {
+    await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
+  } catch (e) {
+    authErr.textContent = e?.message || "Sign-in failed.";
+  }
 };
 
 signOutBtn.onclick = () => signOut(auth);
 
-/* Chat realtime */
+/* CHAT */
 let unsub = null;
 
 onAuthStateChanged(auth, (user) => {
   if (!inviteOk()){
     if (unsub) unsub();
-    unsub = null;
     clearMessages();
     showOnly(screenInvite);
     return;
@@ -167,66 +172,42 @@ onAuthStateChanged(auth, (user) => {
 
   if (!user){
     if (unsub) unsub();
-    unsub = null;
     clearMessages();
     showOnly(screenAuth);
     return;
   }
 
   showOnly(screenChat);
-  whoEl.textContent = user.email || user.displayName || user.uid;
+  whoEl.textContent = user.email;
 
   if (unsub) unsub();
 
   const q = query(collection(db, "messages"), orderBy("ts", "asc"), limit(400));
 
   unsub = onSnapshot(q, (snap) => {
-    const shouldAutoScroll = isNearBottom(messagesEl);
-
+    const autoScroll = isNearBottom(messagesEl);
     clearMessages();
-    snap.forEach((doc) => addMessage(doc.data(), user.uid));
-
-    // Always jump to bottom on first load; after that only if user is near bottom
-    if (shouldAutoScroll || snap.metadata.fromCache === false) {
-      scrollToBottom(messagesEl);
-      setJumpVisible(false);
-    } else {
-      // user is reading older messages; show jump button
-      setJumpVisible(true);
-    }
+    snap.forEach(d => addMessage(d.data(), user.uid));
+    if (autoScroll) scrollToBottom();
   });
 });
 
-/* User scroll: if they scroll back to bottom, hide jump button */
-messagesEl.addEventListener("scroll", () => {
-  if (isNearBottom(messagesEl)) setJumpVisible(false);
-});
-
-/* Jump button */
-jumpBtn.addEventListener("click", () => {
-  scrollToBottom(messagesEl);
-  setJumpVisible(false);
-});
-
-/* Send */
+/* SEND */
 sendForm.onsubmit = async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
   if (!user) return;
 
-  const text = (msgInput.value || "").trim();
+  const text = msgInput.value.trim();
   if (!text) return;
 
   await addDoc(collection(db, "messages"), {
     uid: user.uid,
-    name: user.email || user.displayName || user.uid, // username locked to email
+    name: user.email, // 🔒 username locked to email
     text,
     ts: serverTimestamp()
   });
 
   msgInput.value = "";
-  msgInput.focus();
-
-  // Scroll immediately after sending
-  setTimeout(() => scrollToBottom(messagesEl), 0);
+  scrollToBottom();
 };
