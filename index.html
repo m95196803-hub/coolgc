@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>New Tab</title>
+  <title>TheGC</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -35,8 +35,20 @@
         <button id="signUpBtn" class="btnSecondary">Create account</button>
       </div>
 
+      <!-- Email verification actions (shown only when needed) -->
+      <div id="verifyBox" class="verifyBox hidden">
+        <div class="verifyTitle">Verify your email</div>
+        <div class="verifyText">
+          We sent a verification email. Please verify your email, then come back here.
+        </div>
+        <div class="row">
+          <button id="resendBtn" class="btnSecondary" type="button">Resend email</button>
+          <button id="verifiedBtn" class="btnPrimary" type="button">I’ve verified</button>
+        </div>
+      </div>
+
       <p id="authErr" class="err"></p>
-      <p class="muted small">Friends-only. Email/password works everywhere.</p>
+      <p class="muted small">Friends-only. Invite link required.</p>
     </div>
   </section>
 
@@ -46,17 +58,17 @@
       <div class="title">TheGC</div>
       <div class="topRight">
         <div id="who" class="who"></div>
-        <button id="signOutBtn" class="btnSecondary smallBtn">Sign out</button>
+        <button id="signOutBtn" class="btnSecondary smallBtn" type="button">Sign out</button>
       </div>
     </header>
 
     <main class="chat">
-      <div id="messages" class="messages"></div>
+      <div id="messages" class="messages" aria-live="polite"></div>
 
       <button id="jumpBtn" class="jump hidden" type="button">New messages ↓</button>
 
       <form id="sendForm" class="send">
-        <input id="msgInput" placeholder="Type a message…" autocomplete="off" />
+        <input id="msgInput" placeholder="Type a message…" autocomplete="off" maxlength="400" />
         <button id="sendBtn" class="btnPrimary" type="submit">Send</button>
       </form>
     </main>
