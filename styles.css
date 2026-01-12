@@ -2,8 +2,8 @@
   --bg:#0b141a;
   --panel:#111b21;
 
-  --sent:#0f9911;   /* ✅ SENT (right) */
-  --recv:#0a83f5;   /* RECEIVED (left) */
+  --sent:#0f9911;  /* SENT (right) */
+  --recv:#0a83f5;  /* RECEIVED (left) */
 
   --btn:#00a884;
   --btn2:#202c33;
@@ -12,13 +12,9 @@
 
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
+body{background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
 
-body{
-  background:var(--bg);
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-}
-
-/* ---------- SCREENS ---------- */
+/* Full-screen screens */
 .screen{
   height:100%;
   width:100%;
@@ -28,7 +24,7 @@ body{
 }
 .hidden{display:none}
 
-/* ---------- CENTER CARDS ---------- */
+/* Center auth cards */
 .centerCard{
   width:min(420px,92vw);
   background:var(--panel);
@@ -39,13 +35,8 @@ body{
   box-shadow:0 14px 40px rgba(0,0,0,.35);
 }
 
-.bigTitle{
-  margin:0 0 8px 0;
-  font-size:28px;
-  font-weight:900;
-}
-
-.muted{color:var(--muted)}
+.bigTitle{margin:0 0 8px 0;font-size:28px;font-weight:900}
+.muted{color:var(--muted); margin:6px 0}
 .muted.small{font-size:12px}
 
 input{
@@ -67,39 +58,35 @@ button{
 
 .btnPrimary{background:var(--btn);color:white;width:100%}
 .btnSecondary{background:var(--btn2);color:white}
-.smallBtn{padding:10px 12px}
+.smallBtn{padding:10px 12px; border-radius:10px}
 
-.row{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
+.row{display:flex;gap:10px;margin-top:10px}
 .row button{flex:1}
 
 .divider{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin:14px 0;
-  color:var(--muted);
-  font-size:13px;
+  display:flex;align-items:center;gap:10px;margin:14px 0;
+  color:var(--muted);font-size:13px
 }
-.divider:before,
-.divider:after{
-  content:"";
-  flex:1;
-  height:1px;
-  background:#3b4a54;
+.divider:before,.divider:after{
+  content:""; flex:1; height:1px; background:#3b4a54;
 }
 
 .err{color:#ff8a8a;margin-top:10px}
 
-/* ---------- CHAT ---------- */
-#screenChat{
-  flex-direction:column;
-  align-items:stretch;
-  justify-content:flex-start;
+/* Verification box */
+.verifyBox{
+  margin-top:14px;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  text-align:left;
 }
+.verifyTitle{font-weight:900;margin-bottom:6px}
+.verifyText{color:var(--muted);font-size:13px;line-height:1.35}
+
+/* Chat screen layout */
+#screenChat{flex-direction:column; align-items:stretch; justify-content:flex-start}
 
 .topBar{
   background:#202c33;
@@ -110,14 +97,17 @@ button{
   align-items:center;
 }
 
-.title{
-  font-size:18px;
-  font-weight:900;
+.title{font-size:18px;font-weight:900}
+
+.topRight{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
 .who{
-  font-size:12px;
   color:#cfe6ee;
+  font-size:12px;
   max-width:45vw;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -131,7 +121,7 @@ button{
   min-height:0;
 }
 
-/* ---------- MESSAGES ---------- */
+/* Messages fills ALL space */
 .messages{
   flex:1;
   min-height:0;
@@ -144,15 +134,12 @@ button{
   background-size:360px auto;
 }
 
-/* Rows */
-.msgRow{
-  display:flex;
-  margin:6px 0;
-}
+/* Left/right alignment rows */
+.msgRow{display:flex;margin:6px 0}
 .msgRow.me{justify-content:flex-end}
 .msgRow.recv{justify-content:flex-start}
 
-/* Bubbles */
+/* Bubble */
 .bubble{
   max-width:75%;
   padding:8px 10px;
@@ -176,7 +163,7 @@ button{
   border-top-left-radius:4px;
 }
 
-/* Name */
+/* Name + time */
 .name{
   font-size:12px;
   font-weight:900;
@@ -185,36 +172,14 @@ button{
 }
 .bubble.me .name{display:none}
 
-/* Time */
 .time{
   font-size:11px;
-  margin-top:4px;
   text-align:right;
-}
-.bubble.me .time,
-.bubble.recv .time{
+  margin-top:4px;
   color:rgba(255,255,255,.85);
 }
 
-/* ---------- SEND BAR ---------- */
-.send{
-  display:flex;
-  gap:10px;
-  padding:10px;
-  background:#202c33;
-}
-
-.send input{
-  flex:1;
-  margin:0;
-  border-radius:12px;
-}
-
-.send button{
-  width:92px;
-}
-
-/* ---------- JUMP BUTTON ---------- */
+/* New messages button */
 .jump{
   align-self:center;
   margin:10px 0;
@@ -225,3 +190,13 @@ button{
   border:1px solid rgba(255,255,255,.10);
   box-shadow:0 10px 25px rgba(0,0,0,.25);
 }
+
+/* Send bar */
+.send{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  background:#202c33;
+}
+.send input{flex:1;margin:0;border-radius:12px}
+.send button{width:92px}
