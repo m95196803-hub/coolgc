@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- SCREEN 1: INVITE -->
+
+  <!-- INVITE SCREEN -->
   <section id="screenInvite" class="screen">
     <div class="centerCard">
       <h1 class="bigTitle">TheGC</h1>
@@ -17,7 +18,7 @@
     </div>
   </section>
 
-  <!-- SCREEN 2: SIGN IN -->
+  <!-- SIGN IN SCREEN -->
   <section id="screenAuth" class="screen hidden">
     <div class="centerCard">
       <h1 class="bigTitle">TheGC</h1>
@@ -27,48 +28,35 @@
 
       <div class="divider"><span>or</span></div>
 
-      <input id="email" type="email" placeholder="Email" autocomplete="email" />
-      <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+      <input id="email" type="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
 
       <div class="row">
         <button id="signInBtn" class="btnSecondary">Sign in</button>
         <button id="signUpBtn" class="btnSecondary">Create account</button>
       </div>
 
-      <!-- Email verification actions (shown only when needed) -->
-      <div id="verifyBox" class="verifyBox hidden">
-        <div class="verifyTitle">Verify your email</div>
-        <div class="verifyText">
-          We sent a verification email. Please verify your email, then come back here.
-        </div>
-        <div class="row">
-          <button id="resendBtn" class="btnSecondary" type="button">Resend email</button>
-          <button id="verifiedBtn" class="btnPrimary" type="button">I’ve verified</button>
-        </div>
-      </div>
-
       <p id="authErr" class="err"></p>
-      <p class="muted small">Friends-only. Invite link required.</p>
     </div>
   </section>
 
-  <!-- SCREEN 3: CHAT -->
+  <!-- CHAT SCREEN -->
   <section id="screenChat" class="screen hidden">
     <header class="topBar">
       <div class="title">TheGC</div>
       <div class="topRight">
         <div id="who" class="who"></div>
-        <button id="signOutBtn" class="btnSecondary smallBtn" type="button">Sign out</button>
+        <button id="signOutBtn" class="btnSecondary smallBtn">Sign out</button>
       </div>
     </header>
 
     <main class="chat">
-      <div id="messages" class="messages" aria-live="polite"></div>
+      <div id="messages" class="messages"></div>
 
-      <button id="jumpBtn" class="jump hidden" type="button">New messages ↓</button>
+      <button id="jumpBtn" class="jump hidden">New messages ↓</button>
 
       <form id="sendForm" class="send">
-        <input id="msgInput" placeholder="Type a message…" autocomplete="off" maxlength="400" />
+        <input id="msgInput" placeholder="Type a message…" autocomplete="off" />
         <button id="sendBtn" class="btnPrimary" type="submit">Send</button>
       </form>
     </main>
