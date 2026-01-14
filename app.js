@@ -20,7 +20,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* 🔴 PASTE YOUR REAL CONFIG HERE */
+/* 🔴 YOUR REAL CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyCPOrxuMh2TqmY7JI4Pky-4VtWwEg5qN7A",
   authDomain: "coolgc-e5af0.firebaseapp.com",
@@ -31,8 +31,8 @@ const firebaseConfig = {
   measurementId: "G-VJC07ML3K9"
 };
 
-
 const REQUIRED_INVITE = "friends2026";
+const APP_TITLE = "TheGC";
 
 const $ = id => document.getElementById(id);
 
@@ -54,8 +54,11 @@ const whoEl      = $("who");
 const messagesEl = $("messages");
 const sendForm   = $("sendForm");
 const msgInput   = $("msgInput");
-const jumpBtn    = $("jumpBtn");
 
+let unreadCount = 0;
+let lastSeenTs = null;
+
+/* ---------- helpers ---------- */
 function showOnly(el){
   screenInvite.classList.add("hidden");
   screenAuth.classList.add("hidden");
@@ -71,14 +74,27 @@ function inviteOk(){
   return getInvite() === REQUIRED_INVITE;
 }
 
-function isNearBottom(el){
-  return (el.scrollHeight - el.scrollTop - el.clientHeight) < 160;
+function isNearBottom(){
+  return (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) < 120;
 }
 
 function scrollToBottom(){
   messagesEl.scrollTop = messagesEl.scrollHeight;
+  clearUnread();
 }
 
+function updateTitle(){
+  document.title = unreadCount > 0
+    ? `New Tab (${unreadCount})`
+    : APP_TITLE;
+}
+
+function clearUnread(){
+  unreadCount = 0;
+  updateTitle();
+}
+
+/* ---------- UI ---------- */
 function addMessage({ text, ts, uid, name }, myUid){
   const row = document.createElement("div");
   row.className = `msgRow ${uid === myUid ? "me" : "recv"}`;
@@ -98,7 +114,7 @@ function addMessage({ text, ts, uid, name }, myUid){
   messagesEl.appendChild(row);
 }
 
-/* Invite gate */
+/* ---------- Invite gate ---------- */
 if (!inviteOk()){
   showOnly(screenInvite);
   inviteErr.textContent = "Missing or invalid invite link.";
@@ -106,12 +122,12 @@ if (!inviteOk()){
   showOnly(screenAuth);
 }
 
-/* Firebase */
+/* ---------- Firebase ---------- */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* Auth */
+/* ---------- Auth ---------- */
 googleBtn.onclick = async () => {
   try { await signInWithPopup(auth, new GoogleAuthProvider()); }
   catch(e){ authErr.textContent = e.message; }
@@ -135,7 +151,7 @@ signInBtn.onclick = async () => {
 
 signOutBtn.onclick = () => signOut(auth);
 
-/* Chat */
+/* ---------- Chat ---------- */
 let unsub = null;
 
 onAuthStateChanged(auth, (user) => {
@@ -151,19 +167,41 @@ onAuthStateChanged(auth, (user) => {
 
   showOnly(screenChat);
   whoEl.textContent = user.email;
+  document.title = APP_TITLE;
 
   if (unsub) unsub();
 
   const q = query(collection(db,"messages"), orderBy("ts"), limit(400));
   unsub = onSnapshot(q, snap => {
-    const auto = isNearBottom(messagesEl);
+    const atBottom = isNearBottom();
     messagesEl.innerHTML = "";
-    snap.forEach(d => addMessage(d.data(), user.uid));
-    if (auto) scrollToBottom();
+
+    snap.forEach(doc => {
+      const data = doc.data();
+      addMessage(data, user.uid);
+
+      if (
+        data.uid !== user.uid &&
+        data.ts &&
+        (!atBottom || document.hidden) &&
+        (!lastSeenTs || data.ts.toMillis() > lastSeenTs)
+      ){
+        unreadCount++;
+      }
+    });
+
+    if (atBottom){
+      scrollToBottom();
+    }
+
+    updateTitle();
+
+    const last = snap.docs.at(-1)?.data()?.ts;
+    if (last) lastSeenTs = last.toMillis();
   });
 });
 
-/* Send */
+/* ---------- Send ---------- */
 sendForm.onsubmit = async (e) => {
   e.preventDefault();
   if (!auth.currentUser) return;
@@ -181,3 +219,12 @@ sendForm.onsubmit = async (e) => {
   msgInput.value="";
   scrollToBottom();
 };
+
+/* ---------- Focus / scroll handling ---------- */
+messagesEl.addEventListener("scroll", () => {
+  if (isNearBottom()) clearUnread();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) clearUnread();
+});
