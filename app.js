@@ -86,7 +86,7 @@ function canNotify(){
   return "Notification" in window;
 }
 
-// Ask permission during a USER click (important: browsers often block prompts otherwise)
+// Ask permission only during a user click (browsers require this)
 async function requestNotifyPermission(){
   if (!canNotify()) return;
   if (Notification.permission === "default") {
@@ -94,17 +94,21 @@ async function requestNotifyPermission(){
   }
 }
 
+// Notify when you are not actively looking at the page
+function shouldNotifyNow(){
+  // notify if tab is hidden OR window not focused
+  return document.hidden || !document.hasFocus();
+}
+
 function showDesktopNotification(title, body){
   if (!canNotify()) return;
   if (Notification.permission !== "granted") return;
-
-  // only notify when you are not looking at the tab
-  if (!document.hidden) return;
+  if (!shouldNotifyNow()) return;
 
   try {
     const n = new Notification(title, {
       body,
-      tag: "thegc-new-message", // replaces previous notification instead of stacking a ton
+      tag: "thegc-new-message", // replaces previous notif instead of spamming
       silent: false
     });
 
@@ -157,7 +161,7 @@ const db = getFirestore(app);
 /* ---------------- Auth ---------------- */
 googleBtn.onclick = async () => {
   authErr.textContent = "";
-  await requestNotifyPermission(); // ✅ user gesture
+  await requestNotifyPermission();
   try {
     await signInWithPopup(auth, new GoogleAuthProvider());
   } catch (e) {
@@ -167,7 +171,7 @@ googleBtn.onclick = async () => {
 
 signUpBtn.onclick = async () => {
   authErr.textContent = "";
-  await requestNotifyPermission(); // ✅ user gesture
+  await requestNotifyPermission();
   try {
     await createUserWithEmailAndPassword(auth, email.value.trim(), password.value);
   } catch (e) {
@@ -177,7 +181,7 @@ signUpBtn.onclick = async () => {
 
 signInBtn.onclick = async () => {
   authErr.textContent = "";
-  await requestNotifyPermission(); // ✅ user gesture
+  await requestNotifyPermission();
   try {
     await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
   } catch (e) {
@@ -190,7 +194,9 @@ signOutBtn.onclick = () => signOut(auth);
 /* ---------------- Chat ---------------- */
 let unsub = null;
 let haveLoadedOnce = false;
-let lastNotifiedMillis = 0; // prevents duplicate notifs
+
+// prevent duplicate notifications across snapshots
+const notifiedIds = new Set();
 
 onAuthStateChanged(auth, (user) => {
   if (!inviteOk()){
@@ -209,7 +215,6 @@ onAuthStateChanged(auth, (user) => {
 
   showOnly(screenChat);
   whoEl.textContent = user.email;
-  document.title = APP_NAME;
 
   if (unsub) unsub();
 
@@ -217,19 +222,22 @@ onAuthStateChanged(auth, (user) => {
   unsub = onSnapshot(q, (snap) => {
     const atBottom = isNearBottom(messagesEl);
 
-    // Notifications: only for NEW docs after first load
+    // Notify only after initial load, and only for real remote adds
     if (haveLoadedOnce) {
       for (const ch of snap.docChanges()) {
         if (ch.type !== "added") continue;
 
+        // Ignore local pending writes (your own sends)
+        if (ch.doc.metadata.hasPendingWrites) continue;
+
+        // Avoid duplicates
+        if (notifiedIds.has(ch.doc.id)) continue;
+        notifiedIds.add(ch.doc.id);
+
         const m = ch.doc.data();
-        const tsMillis = m.ts?.toMillis?.() ?? 0;
 
-        // Only notify about messages from other people
-        if (m.uid !== user.uid && tsMillis > lastNotifiedMillis) {
-          lastNotifiedMillis = tsMillis;
-
-          // Desktop notification (only if tab hidden + permission granted)
+        // Only notify for other people's messages
+        if (m.uid !== user.uid) {
           showDesktopNotification(APP_NAME, `${m.name}: ${m.text}`);
         }
       }
@@ -239,15 +247,25 @@ onAuthStateChanged(auth, (user) => {
     messagesEl.innerHTML = "";
     snap.forEach(d => addMessage(d.data(), user.uid));
 
+    // Auto-scroll if user was already near bottom
     if (atBottom) scrollToBottom();
 
     haveLoadedOnce = true;
+
+    // keep the set from growing forever
+    if (notifiedIds.size > 1000) {
+      notifiedIds.clear();
+    }
   });
 });
 
 /* ---------------- Send ---------------- */
 sendForm.onsubmit = async (e) => {
   e.preventDefault();
+
+  // In case you were already signed in and never clicked a sign-in button:
+  await requestNotifyPermission();
+
   const user = auth.currentUser;
   if (!user) return;
 
@@ -256,7 +274,7 @@ sendForm.onsubmit = async (e) => {
 
   await addDoc(collection(db, "messages"), {
     uid: user.uid,
-    name: user.email,   // locked username
+    name: user.email,
     text: text.slice(0, 400),
     ts: serverTimestamp()
   });
